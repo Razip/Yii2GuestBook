@@ -20,7 +20,7 @@ class m170718_053526_create_message_table extends Migration
             'text' => $this->text()->notNull(),
             'ip' => $this->string()->notNull(),
             'browser' => $this->string()->notNull(),
-            'path_to_file' => $this->string(),
+            'file_url' => $this->string(),
             'created_at' => $this->dateTime()->notNull()
         ]);
     }

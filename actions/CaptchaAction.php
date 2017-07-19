@@ -29,7 +29,7 @@ class CaptchaAction extends Old {
         }
         $length = mt_rand($this->minLength, $this->maxLength);
 
-        $letters = 'abcdefghijklmnopqrstuvwxyz';
+        $letters = 'abcdefghijklmnpqrstuvwxyz';
         $digits = '123456789';
         $code = '';
 

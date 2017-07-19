@@ -6,14 +6,14 @@ use yii\captcha\Captcha;
 
 /* @var $this yii\web\View */
 
-$this->title = 'Yii2 guest book';
+$this->title = 'Yii2 Guestbook';
 ?>
 <div class="site-index">
     <div class="row">
         <?php
         $form = ActiveForm::begin([
 //        'id' => 'message-form',
-        'options' => ['enctype' => 'multipart/form-data'],
+            'options' => ['enctype' => 'multipart/form-data'],
         ])
         ?>
         <div class="col-md-4">
@@ -23,8 +23,9 @@ $this->title = 'Yii2 guest book';
 
             <?= $form->field($message, 'homepage') ?>
 
-            <?=  $form->field($message, 'file')->fileInput() ?>
+            <?= $form->field($message, 'file')->fileInput() ?>
 
+            <?= $form->field($message, 'captcha')->widget(Captcha::className()) ?>
 
             <div class="form-group">
                 <?= Html::submitButton('Send', ['class' => 'btn btn-primary']) ?>

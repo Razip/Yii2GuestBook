@@ -50,9 +50,9 @@ $config = [
     ],
     'params' => $params,
 
-//    'aliases' => [
-//        '@message_files' => '.@web/message_files',
-//    ],
+    'aliases' => [
+        '@message_files' => 'message_files',
+    ],
 ];
 
 if (YII_ENV_DEV) {

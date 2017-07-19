@@ -36,8 +36,16 @@ class SiteController extends Controller
 
             $message->file = UploadedFile::getInstance($message, 'file');
 
-            // saveFile() may do some extra validation too
+            $message->ip = Yii::$app->request->getUserIP();
+
+            $message->browser = Yii::$app->request->getUserAgent();
+
+            $message->created_at = date('Y-m-d H:i:s', time());
+
+            // saveFile() may do some validation too
             if ($message->validate() && $message->saveFile()) {
+                $message->save(false);
+
                 // emptying the form
                 $message = new Message();
             }

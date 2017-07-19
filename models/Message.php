@@ -2,9 +2,11 @@
 
 namespace app\models;
 
+use Imagine\Gd\Imagine;
 use yii\base\DynamicModel;
 use yii\db\ActiveRecord;
 use Yii;
+use Imagine\Image\Box;
 
 class Message extends ActiveRecord
 {
@@ -14,15 +16,10 @@ class Message extends ActiveRecord
     public $file;
     public $captcha;
 
-    protected function getMessageFilesPath()
-    {
-        return Yii::$app->getBasePath() . '/web/message_files';
-    }
-
     public function rules()
     {
         return [
-            [['username', 'email', 'text', /*'captcha'*/], 'required'],
+            [['username', 'email', 'text', 'captcha'], 'required'],
 
             [
                 ['username'],
@@ -36,7 +33,7 @@ class Message extends ActiveRecord
 
 //            [['text']],
 
-//            [['captcha'], 'captcha'],
+            [['captcha'], 'captcha'],
 
             [
                 ['file'],
@@ -45,6 +42,30 @@ class Message extends ActiveRecord
                 'checkExtensionByMimeType' => false,
             ],
         ];
+    }
+
+    protected function pathToNewFile() {
+        while (true) {
+            $filename = uniqid(rand()) . '.' . $this->file->getExtension();
+
+            $pathToNewFile = join('/', [
+                Yii::getAlias('@webroot'),
+                Yii::getAlias('@message_files'),
+                $filename
+            ]);
+
+            if (!file_exists($pathToNewFile)) {
+                $this->file_url = join('/', [
+                    Yii::getAlias('@web'),
+                    Yii::getAlias('@message_files'),
+                    $filename
+                ]);
+
+                return $pathToNewFile;
+            }
+        }
+
+        return null;
     }
 
     public function saveFile()
@@ -61,29 +82,27 @@ class Message extends ActiveRecord
                 if (!$tempModel->validate()) {
                     // putting the error to the main model
                     // so it can be shown
-                    $this->addErrors($tempModel->errors);
+                    $this->addErrors($tempModel->getErrors());
 
                     return false;
                 }
-            } else { // working with pictures
-                
-            }
 
-            $pathToNewFile = '';
+                $this->file->saveAs($this->pathToNewFile());
+            } else {
+                $imagine = new Imagine();
 
-            // a way to ensure that the filename
-            // is absolutely unique
-            while (true) {
-                $filename = uniqid(rand()) . '.' . $this->file->getExtension();
+                $image = $imagine->open($this->file->tempName);
 
-                $pathToNewFile = $this->getMessageFilesPath() . '/' . $filename;
+                $width = $image->getSize()->getWidth();
 
-                if (!file_exists($pathToNewFile)) {
-                    break;
+                $height = $image->getSize()->getHeight();
+
+                if ($width > 320 && ($height > 240)) {
+                    $image->resize(new Box(320, 240));
                 }
-            }
 
-            $this->file->saveAs($pathToNewFile);
+                $image->save($this->pathToNewFile());
+            }
 
             return true;
         }

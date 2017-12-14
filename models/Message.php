@@ -14,37 +14,64 @@ class Message extends ActiveRecord
      * @var yii\web\UploadedFile
      */
     public $file;
+
     public $captcha;
 
     public function rules()
     {
         return [
-            [['username', 'email', 'text', 'captcha'], 'required'],
+            [['email'], 'email'],
+            [['homepage'], 'url'],
+
+            // If you want to disable the captcha while
+            // debugging, simply comment two following array elements
+            [
+                ['captcha'],
+                'captcha',
+            ],
+
+            [['captcha'], 'required'],
 
             [
                 ['username'],
+
                 'match',
                 'pattern' => '/^[a-zA-Z\d]+$/',
                 'message' => 'Please, use English letters and digits only',
             ],
 
-            [['email'], 'email'],
-            [['homepage'], 'url'],
-
-//            [['text']],
-
-            [['captcha'], 'captcha'],
-
             [
                 ['file'],
+
                 'file',
                 'extensions' => ['txt', 'png', 'jpg', 'jpeg', 'gif'],
                 'checkExtensionByMimeType' => false,
+
             ],
+
+            [
+                ['file'],
+
+                'file',
+                'maxSize' => 1024 * 100,
+
+                'when' => function ($model) {
+                    return $model->file->getExtension() === 'txt';
+                },
+
+                'whenClient' => "function (attribute, value) {
+                    return value.split('.').pop() === 'txt';
+                }",
+            ],
+
+//            [['text']],
+
+            [['username', 'email', 'text'], 'required'],
         ];
     }
 
-    protected function pathToNewFile() {
+    protected function pathToNewFile()
+    {
         while (true) {
             $filename = uniqid(rand()) . '.' . $this->file->getExtension();
 
@@ -71,22 +98,7 @@ class Message extends ActiveRecord
     public function saveFile()
     {
         if (!empty($this->file)) {
-            // .txt files require additional validation
             if ($this->file->getExtension() === 'txt') {
-                $tempModel = DynamicModel::validateData(['file'], [
-                    [['file'], 'file', 'maxSize' => 1024 * 100],
-                ]);
-
-                $tempModel->file = $this->file;
-
-                if (!$tempModel->validate()) {
-                    // putting the error to the main model
-                    // so it can be shown
-                    $this->addErrors($tempModel->getErrors());
-
-                    return false;
-                }
-
                 $this->file->saveAs($this->pathToNewFile());
             } else {
                 $imagine = new Imagine();
@@ -103,8 +115,6 @@ class Message extends ActiveRecord
 
                 $image->save($this->pathToNewFile());
             }
-
-            return true;
         }
 
         return true;

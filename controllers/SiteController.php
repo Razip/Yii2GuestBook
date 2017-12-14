@@ -6,6 +6,7 @@ use app\models\Message;
 use yii\web\Controller;
 use Yii;
 use yii\web\UploadedFile;
+use yii\data\ActiveDataProvider;
 
 class SiteController extends Controller
 {
@@ -51,6 +52,16 @@ class SiteController extends Controller
             }
         }
 
-        return $this->render('index', ['message' => $message]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => Message::find()->orderBy(['created_at' => SORT_DESC]),
+            'pagination' => [
+                'pageSize' => 25,
+            ],
+        ]);
+
+        return $this->render('index', [
+            'message' => $message,
+            'dataProvider' => $dataProvider
+        ]);
     }
 }

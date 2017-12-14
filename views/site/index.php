@@ -3,8 +3,12 @@
 use yii\bootstrap\ActiveForm;
 use yii\bootstrap\Html;
 use yii\captcha\Captcha;
+use yii\grid\GridView;
+
 
 /* @var $this yii\web\View */
+/* @var $message app\models\Message */
+/* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'Yii2 Guestbook';
 ?>
@@ -35,6 +39,27 @@ $this->title = 'Yii2 Guestbook';
             <?= $form->field($message, 'text')->textarea() ?>
         </div>
         <?php ActiveForm::end() ?>
+    </div>
+    <div class="row">
+        <?php
+        echo GridView::widget([
+            'dataProvider' => $dataProvider,
+
+            'columns' => [
+                'username',
+                'email',
+                'homepage',
+                'created_at',
+
+//                [
+//                    'label' => 'Message',
+//                    'value' => function ($data) {
+//                        return '<div>abc</div>';
+//                    },
+//                ],
+            ]
+        ]);
+        ?>
     </div>
     <div class="row"></div>
 </div>

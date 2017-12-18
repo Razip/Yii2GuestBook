@@ -18,22 +18,13 @@ class CaptchaAction extends Old {
      */
     protected function generateVerifyCode()
     {
-        if ($this->minLength > $this->maxLength) {
-            $this->maxLength = $this->minLength;
-        }
-        if ($this->minLength < 3) {
-            $this->minLength = 3;
-        }
-        if ($this->maxLength > 20) {
-            $this->maxLength = 20;
-        }
-        $length = mt_rand($this->minLength, $this->maxLength);
+        $length = 7;
 
-        $letters = 'abcdefghijklmnpqrstuvwxyz';
+        $letters = 'abcdefghjklmnpqrstuvwxyz';
         $digits = '123456789';
         $code = '';
 
-        for ($i = 0; $i < $length; ++$i) {
+        for ($i = 1; $i <= $length; $i++) {
             if ($i % 2 && mt_rand(0, 10) > 2 || !($i % 2) && mt_rand(0, 10) > 9) {
                 $code .= $digits[mt_rand(0, strlen($digits) - 1)];
             } else {

@@ -1,10 +1,10 @@
 <?php
 
+use dosamigos\tinymce\TinyMce;
 use yii\bootstrap\ActiveForm;
 use yii\bootstrap\Html;
 use yii\captcha\Captcha;
 use yii\grid\GridView;
-
 
 /* @var $this yii\web\View */
 /* @var $message app\models\Message */
@@ -32,60 +32,58 @@ $this->title = 'Yii2 Guestbook';
             <?= $form->field($message, 'captcha')->widget(Captcha::className()) ?>
         </div>
         <div class="col-md-8">
-            <?php
-            $template = <<< 'NOW'
-            {label}
-            <ul class="list-inline">
-                <li>
-                    <input type="button" class="btn btn-xs" value="link">
-                </li>
-                <li>
-                    <input type="button" class="btn btn-xs" value="code">
-                </li>
-                <li>
-                    <input type="button" class="btn btn-xs" value="italic">
-                </li>
-                <li>
-                    <input type="button" class="btn btn-xs" value="strike">
-                </li>
-                <li>
-                    <input type="button" class="btn btn-xs" value="bold">
-                </li>
-            </ul>
-            {input}{error}{hint}
-NOW;
-
-            echo $form->field($message, 'text', ['template' => $template])->textarea();
-            ?>
+            <?= $form->field($message, 'text')->textarea()->widget(TinyMce::className(), [
+                'options' => ['rows' => 6],
+                'language' => 'en',
+                'clientOptions' => [
+                    'plugins' => 'link codesample',
+                    'toolbar' => 'bold italic strikethrough | link | codesample',
+                    'menubar' => false,
+                    'target_list' => false,
+                    'link_title' => false,
+                    'branding' => false,
+                    'elementpath' => false,
+                ]
+            ]) ?>
         </div>
         <div class="row">
-            <div class="form-group col-md-12">
+            <div class="form-group col-md-12" style="margin-left: 15px">
                 <?= Html::submitButton('Send', ['class' => 'btn btn-primary']) ?>
             </div>
         </div>
         <?php ActiveForm::end() ?>
     </div>
     <div class="row">
-        <?php
-        echo GridView::widget([
-            'dataProvider' => $dataProvider,
+        <div class="table-responsive">
+            <?php
+            echo GridView::widget([
+                'dataProvider' => $dataProvider,
 
-            'columns' => [
-                'username',
-                'email',
-                'homepage',
-                'created_at',
+                'columns' => [
+                    'username',
+                    'email',
 
-                [
-                    'label' => 'Message',
-                    'format' => 'raw',
-                    'value' => function ($data) {
-                        return $data->text;
-                    }
-                ],
-            ]
-        ]);
-        ?>
+                    [
+                        'attribute' => 'homepage',
+                        'label' => 'Homepage',
+                        'enableSorting' => false,
+                    ],
+
+                    [
+                        'attribute' => 'created_at',
+                        'label' => 'Posted at',
+                        'format' => ['datetime', 'Y-M-d H:i:s'],
+                    ],
+
+                    [
+                        'attribute' => 'text',
+                        'label' => 'Message',
+                        'format' => 'raw',
+                        'enableSorting' => false,
+                    ],
+                ]
+            ]);
+            ?>
+        </div>
+        <div class="row"></div>
     </div>
-    <div class="row"></div>
-</div>

@@ -21,14 +21,39 @@ class Message extends ActiveRecord
     {
         return [
             [['email'], 'email'],
+
             [['homepage'], 'url'],
 
             // If you want to disable the captcha while
             // debugging, simply comment two following array elements
 
-            ['captcha', 'captcha'],
+            [['captcha'], 'required'],
 
-            ['captcha', 'required'],
+            [
+                ['captcha'],
+
+                'match',
+                'pattern' => '/^[a-zA-Z\d]+$/',
+                'message' => 'Please, use only English letters and digits',
+            ],
+
+            [
+                ['captcha'],
+
+                'string',
+                'length' => 7,
+            ],
+
+            [['captcha'], 'captcha'],
+
+            [
+                ['username'],
+
+                'match',
+                'pattern' => '/^\d+$/',
+                'not' => true,
+                'message' => 'Username cannot exclusively consist of digits'
+            ],
 
             [
                 ['username'],
@@ -36,6 +61,14 @@ class Message extends ActiveRecord
                 'match',
                 'pattern' => '/^[a-zA-Z\d]+$/',
                 'message' => 'Please, use only English letters and digits',
+            ],
+
+            [
+                ['username'],
+
+                'string',
+                'min' => 4,
+                'max' => 20,
             ],
 
             [
@@ -68,21 +101,17 @@ class Message extends ActiveRecord
 
     public function beforeValidate()
     {
-        // Keep in mind, when someone sends nothing, but XSS
-        // as a message's text, the XSS code will be removed,
-        // thus the message's text string will be empty, which
-        // will make the site think it was originally empty, and
-        // it will say "a certain field cannot be empty",
-        // but that's not an issue, since there will be a client-side
-        // allowed tags validation which will make it impossible
-        // for normal users to experience that thing
-
+        // It removes all of the forbidden HTML tags and CSS styles
         $text = HTMLPurifier::process($this->getAttribute('text'), function (\HTMLPurifier_Config $config) {
             $config->set('HTML.Doctype', 'XHTML 1.0 Strict');
-            $config->set('HTML.Allowed', 'a[href], code, i, span[style], strong');
+            $config->set('HTML.Allowed', 'a[href], em, br, p, strong, span[style], pre[class]');
             $config->set('CSS.AllowedProperties', 'text-decoration');
             $config->set('AutoFormat.RemoveEmpty', true);
+
+            // Next lines of code add rel="nofollow" attribute and
+            // set the necessary target to all links in one place
             $config->set('HTML.Nofollow', true);
+            $config->set('HTML.TargetBlank', true);
 
             $css = $config->getCSSDefinition();
 

@@ -3,10 +3,10 @@
 namespace app\controllers;
 
 use app\models\Message;
-use yii\web\Controller;
 use Yii;
-use yii\web\UploadedFile;
 use yii\data\ActiveDataProvider;
+use yii\web\Controller;
+use yii\web\UploadedFile;
 
 class SiteController extends Controller
 {
@@ -35,19 +35,16 @@ class SiteController extends Controller
         if (Yii::$app->request->isPost) {
             $message->load(Yii::$app->request->post());
 
-            $message->file = UploadedFile::getInstance($message, 'file');
+            $message->setAttributes([
+                'file' => UploadedFile::getInstance($message, 'file'),
+                'ip' => Yii::$app->request->getUserIP(),
+                'browser' => Yii::$app->request->getUserAgent(),
+                'created_at' => date('Y-m-d H:i:s', time()),
+            ]);
 
-            $message->ip = Yii::$app->request->getUserIP();
-
-            $message->browser = Yii::$app->request->getUserAgent();
-
-            $message->created_at = date('Y-m-d H:i:s', time());
-
-            // saveFile() may do some validation too
-            if ($message->validate() && $message->saveFile()) {
-                $message->save(false);
-
-                // emptying the form
+            if ($message->save()) {
+                // we empty the form emptying the model
+                // whose data is used to fill it
                 $message = new Message();
             }
         }

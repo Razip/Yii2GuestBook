@@ -3,15 +3,15 @@
 namespace app\models;
 
 use Imagine\Gd\Imagine;
-use yii\base\DynamicModel;
-use yii\db\ActiveRecord;
-use Yii;
 use Imagine\Image\Box;
+use Yii;
+use yii\db\ActiveRecord;
+use yii\helpers\HtmlPurifier;
 
 class Message extends ActiveRecord
 {
     /**
-     * @var yii\web\UploadedFile
+     * @var null|yii\web\UploadedFile
      */
     public $file;
 
@@ -25,26 +25,24 @@ class Message extends ActiveRecord
 
             // If you want to disable the captcha while
             // debugging, simply comment two following array elements
-            [
-                ['captcha'],
-                'captcha',
-            ],
 
-            [['captcha'], 'required'],
+            ['captcha', 'captcha'],
+
+            ['captcha', 'required'],
 
             [
                 ['username'],
 
                 'match',
                 'pattern' => '/^[a-zA-Z\d]+$/',
-                'message' => 'Please, use English letters and digits only',
+                'message' => 'Please, use only English letters and digits',
             ],
 
             [
                 ['file'],
 
                 'file',
-                'extensions' => ['txt', 'png', 'jpg', 'jpeg', 'gif'],
+                'extensions' => ['txt', 'png', 'jpg', 'gif'],
                 'checkExtensionByMimeType' => false,
 
             ],
@@ -64,10 +62,37 @@ class Message extends ActiveRecord
                 }",
             ],
 
-//            [['text']],
-
-            [['username', 'email', 'text'], 'required'],
+            [['username', 'email', 'text', 'ip', 'browser', 'created_at'], 'required'],
         ];
+    }
+
+    public function beforeValidate()
+    {
+        // Keep in mind, when someone sends nothing, but XSS
+        // as a message's text, the XSS code will be removed,
+        // thus the message's text string will be empty, which
+        // will make the site think it was originally empty, and
+        // it will say "a certain field cannot be empty",
+        // but that's not an issue, since there will be a client-side
+        // allowed tags validation which will make it impossible
+        // for normal users to experience that thing
+
+        $text = HTMLPurifier::process($this->getAttribute('text'), function (\HTMLPurifier_Config $config) {
+            $config->set('HTML.Doctype', 'XHTML 1.0 Strict');
+            $config->set('HTML.Allowed', 'a[href], code, i, span[style], strong');
+            $config->set('CSS.AllowedProperties', 'text-decoration');
+            $config->set('AutoFormat.RemoveEmpty', true);
+            $config->set('HTML.Nofollow', true);
+
+            $css = $config->getCSSDefinition();
+
+            // only text-decoration:line-through is allowed
+            $css->info['text-decoration'] = new \HTMLPurifier_AttrDef_Enum(['line-through']);
+        });
+
+        $this->setAttribute('text', $text);
+
+        return true;
     }
 
     protected function pathToNewFile()
@@ -95,7 +120,7 @@ class Message extends ActiveRecord
         return null;
     }
 
-    public function saveFile()
+    public function afterValidate()
     {
         if (!empty($this->file)) {
             if ($this->file->getExtension() === 'txt') {

@@ -16,7 +16,7 @@ $this->title = 'Yii2 Guestbook';
     <div class="row">
         <?php
         $form = ActiveForm::begin([
-//        'id' => 'message-form',
+            'id' => 'message-form',
             'options' => ['enctype' => 'multipart/form-data'],
         ])
         ?>
@@ -30,13 +30,38 @@ $this->title = 'Yii2 Guestbook';
             <?= $form->field($message, 'file')->fileInput() ?>
 
             <?= $form->field($message, 'captcha')->widget(Captcha::className()) ?>
-
-            <div class="form-group">
-                <?= Html::submitButton('Send', ['class' => 'btn btn-primary']) ?>
-            </div>
         </div>
         <div class="col-md-8">
-            <?= $form->field($message, 'text')->textarea() ?>
+            <?php
+            $template = <<< 'NOW'
+            {label}
+            <ul class="list-inline">
+                <li>
+                    <input type="button" class="btn btn-xs" value="link">
+                </li>
+                <li>
+                    <input type="button" class="btn btn-xs" value="code">
+                </li>
+                <li>
+                    <input type="button" class="btn btn-xs" value="italic">
+                </li>
+                <li>
+                    <input type="button" class="btn btn-xs" value="strike">
+                </li>
+                <li>
+                    <input type="button" class="btn btn-xs" value="bold">
+                </li>
+            </ul>
+            {input}{error}{hint}
+NOW;
+
+            echo $form->field($message, 'text', ['template' => $template])->textarea();
+            ?>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <?= Html::submitButton('Send', ['class' => 'btn btn-primary']) ?>
+            </div>
         </div>
         <?php ActiveForm::end() ?>
     </div>
@@ -51,12 +76,13 @@ $this->title = 'Yii2 Guestbook';
                 'homepage',
                 'created_at',
 
-//                [
-//                    'label' => 'Message',
-//                    'value' => function ($data) {
-//                        return '<div>abc</div>';
-//                    },
-//                ],
+                [
+                    'label' => 'Message',
+                    'format' => 'raw',
+                    'value' => function ($data) {
+                        return $data->text;
+                    }
+                ],
             ]
         ]);
         ?>

@@ -104,7 +104,7 @@ class Message extends ActiveRecord
         // It removes all of the forbidden HTML tags and CSS styles
         $text = HTMLPurifier::process($this->getAttribute('text'), function (\HTMLPurifier_Config $config) {
             $config->set('HTML.Doctype', 'XHTML 1.0 Strict');
-            $config->set('HTML.Allowed', 'a[href], em, br, p, strong, span[style], pre[class]');
+            $config->set('HTML.Allowed', 'a[href], em, br, p, code, strong, span[style], pre[class]');
             $config->set('CSS.AllowedProperties', 'text-decoration');
             $config->set('AutoFormat.RemoveEmpty', true);
 

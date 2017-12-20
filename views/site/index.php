@@ -1,6 +1,6 @@
 <?php
 
-use dosamigos\tinymce\TinyMce;
+use app\assets\AppAsset;
 use yii\bootstrap\ActiveForm;
 use yii\bootstrap\Html;
 use yii\captcha\Captcha;
@@ -32,19 +32,7 @@ $this->title = 'Yii2 Guestbook';
             <?= $form->field($message, 'captcha')->widget(Captcha::className()) ?>
         </div>
         <div class="col-md-8">
-            <?= $form->field($message, 'text')->textarea()->widget(TinyMce::className(), [
-                'options' => ['rows' => 6],
-                'language' => 'en',
-                'clientOptions' => [
-                    'plugins' => 'link codesample',
-                    'toolbar' => 'bold italic strikethrough | link | codesample',
-                    'menubar' => false,
-                    'target_list' => false,
-                    'link_title' => false,
-                    'branding' => false,
-                    'elementpath' => false,
-                ]
-            ]) ?>
+            <?= $form->field($message, 'text')->textarea() ?>
         </div>
         <div class="row">
             <div class="form-group col-md-12" style="margin-left: 15px">
@@ -87,3 +75,7 @@ $this->title = 'Yii2 Guestbook';
         </div>
         <div class="row"></div>
     </div>
+</div>
+<?php
+$this->registerJsFile('js/site/index.js', ['depends' => [AppAsset::className()]]);
+?>

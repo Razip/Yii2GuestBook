@@ -19,10 +19,11 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
         'css/site.css',
-        'assets/a7c3cdcc/plugins/codesample/css/prism.css',
+        'tinymce/plugins/codesample/css/prism.css',
     ];
     public $js = [
         'js/prism.js',
+        'tinymce/tinymce.min.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',

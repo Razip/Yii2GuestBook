@@ -50,15 +50,65 @@ class SiteController extends Controller
         }
 
         $dataProvider = new ActiveDataProvider([
-            'query' => Message::find()->orderBy(['created_at' => SORT_DESC]),
-            'pagination' => [
-                'pageSize' => 25,
-            ],
+            'query' => Message::find()
+                ->select([
+                    'username',
+                    'email',
+                    'homepage',
+                    'created_at',
+                    'text',
+                    'file_id',
+                    'file_real_name',
+                ])
+                ->orderBy(['created_at' => SORT_DESC]), 'pagination' => ['pageSize' => 25],
         ]);
 
         return $this->render('index', [
             'message' => $message,
             'dataProvider' => $dataProvider
         ]);
+    }
+
+    /**
+     * This action is used to get a certain file by its ID
+     *
+     * @param string $id
+     * @throws \Exception
+     * @return mixed
+     */
+    public function actionGetFile(string $id)
+    {
+        $fileData = Message::find()
+            ->where(['file_id' => $id])
+            ->select(['file_real_name'])
+            ->one();
+
+        try {
+            if (is_null($fileData)) {
+                throw new \Exception('No such file was found');
+            }
+
+            $realFilename = $fileData->getAttribute('file_real_name');
+
+            $extension = pathinfo($realFilename, PATHINFO_EXTENSION);
+
+            $storageFilename = join('.', [
+                $id,
+                $extension,
+            ]);
+
+            $filePath = join('/', [
+                Yii::getAlias('@message_files_root'),
+                $storageFilename,
+            ]);
+
+            // sending the file with its original one
+            return Yii::$app->response->sendFile($filePath, $realFilename);
+
+        } catch (\Exception $e) {
+            return $this->render('error', [
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

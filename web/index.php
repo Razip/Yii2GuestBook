@@ -9,4 +9,14 @@ require(__DIR__ . '/../vendor/yiisoft/yii2/Yii.php');
 
 $config = require(__DIR__ . '/../config/web.php');
 
-(new yii\web\Application($config))->run();
+$app = new class($config) extends yii\web\Application
+{
+    protected function bootstrap()
+    {
+        parent::bootstrap();
+
+        require(__DIR__ . '/../config/aliases.php');
+    }
+};
+
+$app->run();

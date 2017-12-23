@@ -49,10 +49,6 @@ $config = [
         */
     ],
     'params' => $params,
-
-    'aliases' => [
-        '@message_files' => 'message_files',
-    ],
 ];
 
 if (YII_ENV_DEV) {

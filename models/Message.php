@@ -17,6 +17,8 @@ class Message extends ActiveRecord
 
     public $captcha;
 
+    public $file_path;
+
     public function rules()
     {
         return [
@@ -24,8 +26,8 @@ class Message extends ActiveRecord
 
             [['homepage'], 'url'],
 
-            // If you want to disable the captcha while
-            // debugging, simply comment two following array elements
+            // if you want to disable the captcha while
+            // debugging, simply comment following array elements
 
             [['captcha'], 'required'],
 
@@ -101,21 +103,19 @@ class Message extends ActiveRecord
 
     public function beforeValidate()
     {
-        // It removes all of the forbidden HTML tags and CSS styles
+        // removing forbidden HTML tags and CSS styles
         $text = HTMLPurifier::process($this->getAttribute('text'), function (\HTMLPurifier_Config $config) {
             $config->set('HTML.Doctype', 'XHTML 1.0 Strict');
             $config->set('HTML.Allowed', 'a[href], em, br, p, code, strong, span[style], pre[class]');
             $config->set('CSS.AllowedProperties', 'text-decoration');
             $config->set('AutoFormat.RemoveEmpty', true);
 
-            // Next lines of code add rel="nofollow" attribute and
-            // set the necessary target to all links in one place
             $config->set('HTML.Nofollow', true);
             $config->set('HTML.TargetBlank', true);
 
             $css = $config->getCSSDefinition();
 
-            // only text-decoration:line-through is allowed
+            // allowed values of text-decoration CSS style
             $css->info['text-decoration'] = new \HTMLPurifier_AttrDef_Enum(['line-through']);
         });
 
@@ -124,36 +124,46 @@ class Message extends ActiveRecord
         return true;
     }
 
-    protected function pathToNewFile()
+    /**
+     * This function generates a unique ID and a path
+     * that are used to save the file
+     */
+    protected function generateIDAndPath()
     {
         while (true) {
-            $filename = uniqid(rand()) . '.' . $this->file->getExtension();
+            $randID = rand();
 
-            $pathToNewFile = join('/', [
-                Yii::getAlias('@webroot'),
-                Yii::getAlias('@message_files'),
-                $filename
+            $filename = join('.', [
+                $randID,
+                $this->file->getExtension(),
             ]);
 
-            if (!file_exists($pathToNewFile)) {
-                $this->file_url = join('/', [
-                    Yii::getAlias('@web'),
-                    Yii::getAlias('@message_files'),
-                    $filename
-                ]);
+            $filePath = join('/', [
+                Yii::getAlias('@message_files_root'),
+                $filename,
+            ]);
 
-                return $pathToNewFile;
+            if (!file_exists($filePath)) {
+                // if setAttribute() worked, I'd used it here
+
+                $this->file_real_name = $this->file->name;
+
+                $this->file_id = $randID;
+
+                $this->file_path = $filePath;
+
+                break;
             }
         }
-
-        return null;
     }
 
     public function afterValidate()
     {
         if (!empty($this->file)) {
+            $this->generateIDAndPath();
+
             if ($this->file->getExtension() === 'txt') {
-                $this->file->saveAs($this->pathToNewFile());
+                $this->file->saveAs($this->file_path);
             } else {
                 $imagine = new Imagine();
 
@@ -163,11 +173,12 @@ class Message extends ActiveRecord
 
                 $height = $image->getSize()->getHeight();
 
+                // we resize images when they're too big
                 if ($width > 320 && ($height > 240)) {
                     $image->resize(new Box(320, 240));
                 }
 
-                $image->save($this->pathToNewFile());
+                $image->save($this->file_path);
             }
         }
 

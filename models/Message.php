@@ -79,7 +79,6 @@ class Message extends ActiveRecord
                 'file',
                 'extensions' => ['txt', 'png', 'jpg', 'gif'],
                 'checkExtensionByMimeType' => false,
-
             ],
 
             [
@@ -98,6 +97,8 @@ class Message extends ActiveRecord
             ],
 
             [['username', 'email', 'text', 'ip', 'browser', 'created_at'], 'required'],
+
+            [['file_id', 'file_real_name'], 'safe'],
         ];
     }
 
@@ -144,11 +145,10 @@ class Message extends ActiveRecord
             ]);
 
             if (!file_exists($filePath)) {
-                // if setAttribute() worked, I'd used it here
-
-                $this->file_real_name = $this->file->name;
-
-                $this->file_id = $randID;
+                $this->setAttributes([
+                    'file_id' => $randID,
+                    'file_real_name' => $this->file->name,
+                ]);
 
                 $this->file_path = $filePath;
 

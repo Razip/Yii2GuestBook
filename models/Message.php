@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\components\SmartTextValidator;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Yii;
@@ -95,6 +96,9 @@ class Message extends ActiveRecord
                     return value.split('.').pop() === 'txt';
                 }",
             ],
+
+            // a custom validator
+            [['text'], SmartTextValidator::className()],
 
             [['username', 'email', 'text', 'ip', 'browser', 'created_at'], 'required'],
 

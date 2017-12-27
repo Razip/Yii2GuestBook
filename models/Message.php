@@ -18,8 +18,14 @@ class Message extends ActiveRecord
 
     public $captcha;
 
+    /**
+     * @var null|string
+     */
     public $file_path;
 
+    /**
+     * @return array
+     */
     public function rules()
     {
         return [
@@ -92,9 +98,11 @@ class Message extends ActiveRecord
                     return $model->file->getExtension() === 'txt';
                 },
 
-                'whenClient' => "function (attribute, value) {
-                    return value.split('.').pop() === 'txt';
-                }",
+                'whenClient' => <<< JS
+                    function (attribute, value) {
+                        return value.split('.').pop() === 'txt';
+                    }
+JS
             ],
 
             // a custom validator
@@ -106,6 +114,9 @@ class Message extends ActiveRecord
         ];
     }
 
+    /**
+     * @return bool
+     */
     public function beforeValidate()
     {
         // removing forbidden HTML tags and CSS styles
@@ -161,9 +172,15 @@ class Message extends ActiveRecord
         }
     }
 
+    /**
+     * @return bool
+     */
     public function afterValidate()
     {
         if (!empty($this->file)) {
+            // here, we apply all the necessary operations on
+            // the file and then save it
+
             $this->generateIDAndPath();
 
             if ($this->file->getExtension() === 'txt') {

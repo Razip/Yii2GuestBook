@@ -32,24 +32,8 @@ class SiteController extends Controller
     {
         $message = new Message();
 
-        if (Yii::$app->request->isPost) {
-            $message->load(Yii::$app->request->post());
-
-            $message->setAttributes([
-                'file' => UploadedFile::getInstance($message, 'file'),
-                'ip' => Yii::$app->request->getUserIP(),
-                'browser' => Yii::$app->request->getUserAgent(),
-                'created_at' => date('Y-m-d H:i:s', time()),
-            ]);
-
-            if ($message->save()) {
-                // we empty the form emptying the model
-                // whose data is used to fill it
-                $message = new Message();
-            }
-        }
-
-        $dataProvider = new ActiveDataProvider([
+        // used by a data provider
+        $parameters = [
             'query' => Message::find()
                 ->select([
                     'username',
@@ -60,8 +44,42 @@ class SiteController extends Controller
                     'file_id',
                     'file_real_name',
                 ])
-                ->orderBy(['created_at' => SORT_DESC]), 'pagination' => ['pageSize' => 25],
-        ]);
+                ->orderBy(['created_at' => SORT_DESC]),
+            'pagination' => ['pageSize' => 25],
+        ];
+
+        if (Yii::$app->request->isPost) {
+            $message->load(Yii::$app->request->post());
+
+            $message->setAttributes([
+                'file' => UploadedFile::getInstance($message, 'file'),
+                'ip' => Yii::$app->request->getUserIP(),
+                'browser' => Yii::$app->request->getUserAgent(),
+                'created_at' => date('Y-m-d H:i:s', time()),
+            ]);
+
+            $result = $message->save();
+
+            // used to update the messages on the client side
+            $dataProvider = new ActiveDataProvider($parameters);
+
+            if (Yii::$app->request->isAjax) {
+                return $this->asJson([
+                    'status' => $result ? 'success' : 'fail',
+                    'messages' => $this->renderPartial('/site/index/messages', [
+                        'dataProvider' => $dataProvider,
+                    ]),
+                ]);
+            }
+
+            if ($result) {
+                // we empty the form emptying the model
+                // whose data is used to fill it
+                $message = new Message();
+            }
+        } else {
+            $dataProvider = new ActiveDataProvider($parameters);
+        }
 
         return $this->render('index', [
             'message' => $message,

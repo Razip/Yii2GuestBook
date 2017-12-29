@@ -25,3 +25,40 @@ tinymce.init({
         });
     }
 });
+
+$('#message-form').on('beforeSubmit', function () {
+    var yiiForm = $(this);
+
+    var ajax = $.ajax({
+        type: yiiForm.attr('method'),
+
+        url: yiiForm.attr('action'),
+
+        // available only in newest browser versions
+        data: new FormData(yiiForm[0]),
+
+        processData: false,
+
+        contentType: false
+    });
+
+    ajax.done(function () {
+        $('#message-captcha-image').yiiCaptcha('refresh');
+
+        // clearing the form
+        yiiForm.trigger('reset');
+
+        // removing focus
+        yiiForm.find('input').each(function (index, element) {
+            element.blur();
+        });
+
+        // updating messages
+
+        var URL = window.location.href;
+
+        $('#messages').load(URL + ' #messages > *');
+    });
+
+    return false;
+});

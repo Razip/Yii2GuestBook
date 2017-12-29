@@ -4,7 +4,6 @@ use app\assets\AppAsset;
 use yii\bootstrap\ActiveForm;
 use yii\bootstrap\Html;
 use yii\captcha\Captcha;
-use yii\grid\GridView;
 
 /* @var $this yii\web\View */
 /* @var $message app\models\Message */
@@ -42,38 +41,7 @@ $this->title = 'Yii2 Guestbook';
             <?php ActiveForm::end() ?>
         </div>
         <div class="row" style="padding: 15px">
-            <div class="table-responsive">
-                <?php
-                echo GridView::widget([
-                    'dataProvider' => $dataProvider,
-
-                    'columns' => [
-                        'username',
-                        'email',
-
-                        [
-                            'attribute' => 'homepage',
-                            'label' => 'Homepage',
-                            'enableSorting' => false,
-                        ],
-
-                        [
-                            'attribute' => 'created_at',
-                            'label' => 'Posted at',
-                            'format' => ['datetime', 'Y-M-d H:i:s'],
-                        ],
-
-                        [
-                            'label' => 'Message',
-                            'format' => 'raw',
-                            'value' => function ($model) {
-                                return $this->render('index/messageColumn', ['model' => $model]);
-                            }
-                        ],
-                    ]
-                ]);
-                ?>
-            </div>
+            <?= $this->render('/site/index/messages', ['dataProvider' => $dataProvider]) ?>
             <div class="row"></div>
         </div>
     </div>

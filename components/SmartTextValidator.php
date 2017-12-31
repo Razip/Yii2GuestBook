@@ -8,7 +8,7 @@ use yii\validators\Validator;
  * Class SmartTextValidator
  *
  * Here, we'll be applying all the smart validation
- * on message texts to prevent vandalism
+ * on message texts to fight vandalism
  *
  * @package app\components
  */
@@ -66,8 +66,9 @@ class SmartTextValidator extends Validator
             if (charactersEntered < minLength) {
                 var attributeName = attribute.name;
                 
-                // we make the first letter of the attribute uppercase
-                // because this is what Yii2 validation normally does
+                // we make the first letter of the attribute
+                // uppercase because this is what Yii 2 validation
+                // normally does
                 attributeName = attributeName.charAt(0).toUpperCase() + attributeName.slice(1);
                 
                 var message = attributeName + ' should contain at least ' + minLength + ' characters;'

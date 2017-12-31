@@ -1,18 +1,32 @@
 tinymce.init({
     selector: '#message-text',
+
     plugins: 'link codesample',
+
     toolbar: 'bold italic strikethrough | link | codesample',
+
     menubar: false,
 
     // link plugin
+
     target_list: false,
+
     link_title: false,
+
+    // other
+
     anchor_bottom: false,
+
     anchor_top: false,
 
     branding: false,
+
     elementpath: false,
+
     setup: function (editor) {
+        // TinyMCE copies text to the textarea only
+        // when the form is submitted, which makes
+        // live validation of the field impossible
         editor.on('keyup', function () {
             $(editor.targetElm).val(editor.getContent());
         });
@@ -34,7 +48,7 @@ $('#message-form').on('beforeSubmit', function () {
 
         url: yiiForm.attr('action'),
 
-        // available only in newest browser versions
+        // available only in the newest browsers
         data: new FormData(yiiForm[0]),
 
         processData: false,
@@ -53,10 +67,9 @@ $('#message-form').on('beforeSubmit', function () {
             element.blur();
         });
 
-        // updating messages
-
         var URL = window.location.href;
 
+        // updating messages
         $('#messages').load(URL + ' #messages > *');
     });
 

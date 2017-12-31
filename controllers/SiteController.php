@@ -32,7 +32,7 @@ class SiteController extends Controller
     {
         $message = new Message();
 
-        // used by a data provider
+        // used by data providers
         $parameters = [
             'query' => Message::find()
                 ->select([
@@ -60,7 +60,8 @@ class SiteController extends Controller
 
             $result = $message->save();
 
-            // used to update the messages on the client side
+            // this is used for updating the
+            // messages on the client side
             $dataProvider = new ActiveDataProvider($parameters);
 
             if (Yii::$app->request->isAjax) {
@@ -120,7 +121,7 @@ class SiteController extends Controller
                 $storageFilename,
             ]);
 
-            // sending the file with its original one
+            // sending the file with its original name
             return Yii::$app->response->sendFile($filePath, $realFilename);
 
         } catch (\Exception $e) {
